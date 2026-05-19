@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ title }}</h1>
+  </div>
+  <a href="{{ url_for('skills.list') }}" class="btn btn-secondary">
+    <i class="fas fa-arrow-left"></i> Zpět
+  </a>
+</div>
+
+<div class="form-card">
+  <div class="card">
+    <form method="POST" novalidate>
+      {{ form.hidden_tag() }}
+
+      <div class="form-group">
+        <label class="form-label">Vybrat z katalogu</label>
+        {{ form.catalog_id(class="form-control", id="catalog_select") }}
+        <p class="form-hint">Vyberte předdefinovanou dovednost nebo zadejte vlastní níže.</p>
+        {% for e in form.catalog_id.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+      </div>
+
+      <div style="text-align:center;color:var(--color-text-muted);font-size:0.85rem;margin:0.5rem 0">— nebo zadejte vlastní —</div>
+
+      <div class="form-group">
+        <label class="form-label">Vlastní název dovednosti</label>
+        {{ form.custom_name(class="form-control" + (" is-invalid" if form.custom_name.errors else ""), placeholder="Např. 3D modelování") }}
+        {% for e in form.custom_name.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Kategorie vlastní dovednosti</label>
+        {{ form.custom_category_id(class="form-control") }}
+        {% for e in form.custom_category_id.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">
+          Aktuální úroveň: <span id="cur_display" class="text-primary fw-600">{{ form.current_level.data or 0 }}</span>%
+        </label>
+        <input type="range" id="cur_slider" min="0" max="100"
+               value="{{ form.current_level.data or 0 }}"
+               oninput="document.getElementById('cur_display').textContent=this.value; document.getElementById('cur_field').value=this.value;">
+        {{ form.current_level(id="cur_field", type="hidden") }}
+        <div class="slider-labels"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
+        {% for e in form.current_level.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">
+          Cílová úroveň: <span id="tgt_display" class="text-primary fw-600">{{ form.target_level.data or 100 }}</span>%
+        </label>
+        <input type="range" id="tgt_slider" min="0" max="100"
+               value="{{ form.target_level.data or 100 }}"
+               oninput="document.getElementById('tgt_display').textContent=this.value; document.getElementById('tgt_field').value=this.value;">
+        {{ form.target_level(id="tgt_field", type="hidden") }}
+        <div class="slider-labels"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
+        {% for e in form.target_level.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Poznámky</label>
+        {{ form.notes(class="form-control", rows=3, placeholder="Co se chceš naučit, zdroje, plány...") }}
+        {% for e in form.notes.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+      </div>
+
+      <div style="display:flex;gap:0.75rem;margin-top:1rem">
+        {{ form.submit(class="btn btn-primary") }}
+        <a href="{{ url_for('skills.list') }}" class="btn btn-secondary">Zrušit</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

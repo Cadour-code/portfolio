@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ title }}</h1>
+  </div>
+  <a href="{{ url_for('achievements.list') }}" class="btn btn-secondary">
+    <i class="fas fa-arrow-left"></i> Zpět
+  </a>
+</div>
+
+<div class="form-card">
+  <div class="card">
+    <form method="POST" enctype="multipart/form-data" novalidate>
+      {{ form.hidden_tag() }}
+
+      <div class="form-group">
+        <label class="form-label">Název <span class="required">*</span></label>
+        {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else ""), placeholder="Např. Certifikát Python PCEP") }}
+        {% for e in form.title.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Typ <span class="required">*</span></label>
+          {{ form.type(class="form-control") }}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Datum dosažení <span class="required">*</span></label>
+          {{ form.date_achieved(class="form-control" + (" is-invalid" if form.date_achieved.errors else "")) }}
+          {% for e in form.date_achieved.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Popis</label>
+        {{ form.description(class="form-control", rows=3, placeholder="Popis úspěchu, čeho jsi dosáhl...") }}
+        {% for e in form.description.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Vydavatel / Organizátor</label>
+          {{ form.issuer(class="form-control", placeholder="Např. Cisco, škola, firma...") }}
+          {% for e in form.issuer.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Odkaz</label>
+          {{ form.link(class="form-control" + (" is-invalid" if form.link.errors else ""), placeholder="https://...") }}
+          {% for e in form.link.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Příloha <span style="font-weight:400;color:var(--color-text-muted)">(certifikát, obrázek)</span></label>
+        {% if ach and ach.file_path %}
+        <div class="current-file-card">
+          <i class="fas {% if ach.file_original_name and ach.file_original_name.endswith('.pdf') %}fa-file-pdf{% else %}fa-file-image{% endif %}"
+             style="color:var(--color-accent-red);font-size:1.2rem;flex-shrink:0"></i>
+          <span style="font-size:0.875rem;flex:1;word-break:break-all">{{ ach.file_original_name }}</span>
+          <a href="{{ url_for('achievements.serve_file', filename=ach.file_path) }}"
+             target="_blank" class="btn btn-secondary btn-sm" title="Stáhnout">
+            <i class="fas fa-download"></i>
+          </a>
+          <form method="POST" action="{{ url_for('achievements.delete_file', ach_id=ach.id) }}" style="display:inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-danger btn-sm"
+                    data-confirm="Opravdu chceš smazat tento soubor?">
+              <i class="fas fa-trash"></i>
+            </button>
+          </form>
+        </div>
+        <label class="form-label" style="font-size:0.8rem;color:var(--color-text-muted);margin-top:0.25rem">Nahrát nový soubor (nahradí stávající):</label>
+        {% endif %}
+        {{ form.file(class="file-input") }}
+        <p class="form-hint">Povolené formáty: PDF, PNG, JPG · Max. 8 MB</p>
+        {% for e in form.file.errors %}<p class="form-error"><i class="fas fa-exclamation-circle"></i> {{ e }}</p>{% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Propojená dovednost</label>
+        {{ form.linked_skill_id(class="form-control") }}
+      </div>
+
+      <div style="display:flex;gap:0.75rem;margin-top:1rem;flex-wrap:wrap">
+        {{ form.submit(class="btn btn-primary") }}
+        <a href="{{ url_for('achievements.list') }}" class="btn btn-secondary">Zrušit</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

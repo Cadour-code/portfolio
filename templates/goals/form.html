@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ title }}</h1>
+  </div>
+  <a href="{{ url_for('goals.list') }}" class="btn btn-secondary">
+    <i class="fas fa-arrow-left"></i> Zpět
+  </a>
+</div>
+
+<div class="form-card">
+  <div class="card">
+    <form method="POST" novalidate>
+      {{ form.hidden_tag() }}
+
+      <div class="form-group">
+        <label class="form-label">Název cíle <span class="required">*</span></label>
+        {{ form.title(class="form-control" + (" is-invalid" if form.title.errors else ""), placeholder="Např. Naučit se Python na úroveň B2") }}
+        {% for e in form.title.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Popis</label>
+        {{ form.description(class="form-control", rows=3, placeholder="Podrobný popis cíle...") }}
+        {% for e in form.description.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label">Termín</label>
+          {{ form.deadline(class="form-control") }}
+          {% for e in form.deadline.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Stav</label>
+          {{ form.status(class="form-control") }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">
+          Pokrok: <span id="prog_display" class="text-primary fw-600">{{ form.progress_percent.data or 0 }}</span>%
+        </label>
+        <input type="range" id="prog_slider" min="0" max="100"
+               value="{{ form.progress_percent.data or 0 }}"
+               oninput="document.getElementById('prog_display').textContent=this.value; document.getElementById('prog_field').value=this.value;">
+        {{ form.progress_percent(id="prog_field", type="hidden") }}
+        <div class="slider-labels"><span>0%</span><span>50%</span><span>100%</span></div>
+        {% for e in form.progress_percent.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Propojená dovednost</label>
+        {{ form.linked_skill_id(class="form-control") }}
+      </div>
+
+      <div style="display:flex;gap:0.75rem;margin-top:1rem;flex-wrap:wrap">
+        {{ form.submit(class="btn btn-primary") }}
+        <a href="{{ url_for('goals.list') }}" class="btn btn-secondary">Zrušit</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}{{ skill.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">{{ skill.name }}</h1>
+    {% if skill.category %}
+    <span class="skill-badge" style="background:{{ skill.category.color_hex }};margin-top:0.3rem;display:inline-flex">
+      {{ skill.category.name }}
+    </span>
+    {% endif %}
+  </div>
+  <div style="display:flex;gap:0.5rem">
+    <a href="{{ url_for('skills.edit', skill_id=skill.id) }}" class="btn btn-secondary">
+      <i class="fas fa-pen"></i> Upravit
+    </a>
+    <a href="{{ url_for('skills.list') }}" class="btn btn-secondary">
+      <i class="fas fa-arrow-left"></i> Zpět
+    </a>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 2fr;gap:1.5rem;margin-bottom:1.5rem">
+  <!-- Info card -->
+  <div class="card">
+    <h3 style="font-size:0.9rem;color:var(--color-text-muted);margin-bottom:1rem">Přehled dovednosti</h3>
+
+    <div style="margin-bottom:1.25rem">
+      <div style="font-size:0.8rem;color:var(--color-text-muted);margin-bottom:0.25rem">Aktuální úroveň</div>
+      <div class="slider-value" style="font-size:2.5rem">{{ skill.current_level }}<span style="font-size:1rem;font-weight:400">%</span></div>
+      <div class="progress-wrap" style="margin-top:0.5rem">
+        <div class="progress-bar yellow" style="width:{{ skill.current_level }}%"></div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:1.25rem">
+      <div style="font-size:0.8rem;color:var(--color-text-muted);margin-bottom:0.25rem">Cílová úroveň</div>
+      <div style="font-size:1.3rem;font-weight:600;color:var(--color-primary)">{{ skill.target_level }}%</div>
+      <div class="progress-wrap" style="margin-top:0.5rem;opacity:0.5">
+        <div class="progress-bar" style="width:{{ skill.target_level }}%"></div>
+      </div>
+    </div>
+
+    <div style="font-size:0.8rem;color:var(--color-text-muted)">
+      Přidáno: {{ skill.created_at.strftime('%d. %m. %Y') }}<br>
+      Aktualizováno: {{ skill.updated_at.strftime('%d. %m. %Y') }}
+    </div>
+
+    {% if skill.notes %}
+    <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--color-border);font-size:0.875rem;color:var(--color-text-muted)">
+      {{ skill.notes }}
+    </div>
+    {% endif %}
+
+    <!-- Quick update -->
+    <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--color-border)">
+      <form method="POST" action="{{ url_for('skills.update_level', skill_id=skill.id) }}" style="display:flex;gap:0.5rem;align-items:center">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="number" name="current_level" value="{{ skill.current_level }}"
+               min="0" max="100" class="form-control" style="width:80px">
+        <button type="submit" class="btn btn-warning btn-sm">Aktualizovat</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Line chart -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="fas fa-chart-line"></i> Vývoj v čase</span>
+      <span style="font-size:0.8rem;color:var(--color-text-muted)">{{ data|length }} záznamů</span>
+    </div>
+    {% if data|length > 1 %}
+    <div class="chart-container line-md">
+      <canvas id="lineChart"></canvas>
+    </div>
+    {% elif data|length == 1 %}
+    <div class="empty-state" style="padding:2rem">
+      <i class="fas fa-chart-line"></i>
+      <h3>Zatím jen jeden záznam</h3>
+      <p>Po další aktualizaci úrovně se zobrazí graf vývoje.</p>
+    </div>
+    {% else %}
+    <div class="empty-state" style="padding:2rem">
+      <i class="fas fa-chart-line"></i>
+      <h3>Žádná data</h3>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if data|length > 1 %}
+<script>
+makeLineChart('lineChart', {{ labels|tojson }}, {{ data|tojson }}, {{ skill.name|tojson }});
+</script>
+{% endif %}
+{% endblock %}

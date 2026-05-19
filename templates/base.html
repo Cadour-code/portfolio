@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Studentské portfolio{% endblock %} – Gymnázium Šlapanice</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <a href="{{ url_for('dashboard.index') }}" class="navbar-brand">
+    <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="Logo Gymnázia Šlapanice">
+    <div class="navbar-brand-text">
+      <span class="school-name">Gymnázium</span>
+      <span class="school-sub">Šlapanice</span>
+    </div>
+  </a>
+
+  {% if current_user.is_authenticated %}
+  <ul class="navbar-nav">
+    <li><a href="{{ url_for('dashboard.index') }}"
+           class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
+      <i class="fas fa-gauge-high"></i> Přehled
+    </a></li>
+    <li><a href="{{ url_for('skills.list') }}"
+           class="nav-link {% if request.blueprint == 'skills' %}active{% endif %}">
+      <i class="fas fa-bolt"></i> Dovednosti
+    </a></li>
+    <li><a href="{{ url_for('goals.list') }}"
+           class="nav-link {% if request.blueprint == 'goals' %}active{% endif %}">
+      <i class="fas fa-bullseye"></i> Cíle
+    </a></li>
+    <li><a href="{{ url_for('achievements.list') }}"
+           class="nav-link {% if request.blueprint == 'achievements' %}active{% endif %}">
+      <i class="fas fa-trophy"></i> Úspěchy
+    </a></li>
+    <li><a href="{{ url_for('profile.index') }}"
+           class="nav-link {% if request.blueprint == 'profile' %}active{% endif %}">
+      <i class="fas fa-user"></i> Profil
+    </a></li>
+  </ul>
+
+  <div class="navbar-end">
+    <span class="navbar-user">Ahoj, {{ current_user.first_name }}</span>
+    <a href="{{ url_for('auth.logout') }}" class="btn-icon" title="Odhlásit se">
+      <i class="fas fa-right-from-bracket"></i>
+    </a>
+    <button class="hamburger" id="hamburger-btn" aria-label="Nabídka">
+      <i class="fas fa-bars"></i>
+    </button>
+  </div>
+  {% endif %}
+</nav>
+
+{% if current_user.is_authenticated %}
+<!-- MOBILE NAV -->
+<nav class="mobile-nav" id="mobile-nav">
+  <a href="{{ url_for('dashboard.index') }}" class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}">
+    <i class="fas fa-gauge-high"></i> Přehled
+  </a>
+  <a href="{{ url_for('skills.list') }}" class="nav-link {% if request.blueprint == 'skills' %}active{% endif %}">
+    <i class="fas fa-bolt"></i> Dovednosti
+  </a>
+  <a href="{{ url_for('goals.list') }}" class="nav-link {% if request.blueprint == 'goals' %}active{% endif %}">
+    <i class="fas fa-bullseye"></i> Cíle
+  </a>
+  <a href="{{ url_for('achievements.list') }}" class="nav-link {% if request.blueprint == 'achievements' %}active{% endif %}">
+    <i class="fas fa-trophy"></i> Úspěchy
+  </a>
+  <a href="{{ url_for('profile.index') }}" class="nav-link {% if request.blueprint == 'profile' %}active{% endif %}">
+    <i class="fas fa-user"></i> Profil
+  </a>
+  <a href="{{ url_for('auth.logout') }}" class="nav-link">
+    <i class="fas fa-right-from-bracket"></i> Odhlásit se
+  </a>
+</nav>
+{% endif %}
+
+<div class="layout">
+  {% if current_user.is_authenticated %}
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <a href="{{ url_for('dashboard.index') }}" class="sidebar-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}" title="Přehled">
+      <i class="fas fa-gauge-high"></i>
+    </a>
+    <a href="{{ url_for('skills.add') }}" class="sidebar-link" title="Přidat dovednost">
+      <i class="fas fa-plus-circle"></i>
+    </a>
+    <a href="{{ url_for('goals.add') }}" class="sidebar-link" title="Přidat cíl">
+      <i class="fas fa-bullseye"></i>
+    </a>
+    <a href="{{ url_for('achievements.add') }}" class="sidebar-link" title="Přidat úspěch">
+      <i class="fas fa-trophy"></i>
+    </a>
+    <a href="{{ url_for('profile.index') }}" class="sidebar-link {% if request.blueprint == 'profile' %}active{% endif %}" title="Profil">
+      <i class="fas fa-user"></i>
+    </a>
+  </aside>
+  {% endif %}
+
+  <main class="main-content">
+    <div class="content-wrapper">
+      <!-- FLASH MESSAGES -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <div class="flash-container">
+          {% for category, message in messages %}
+          <div class="alert alert-{{ category }}" data-auto-close>
+            {% if category == 'success' %}<i class="fas fa-check-circle"></i>
+            {% elif category == 'danger' %}<i class="fas fa-exclamation-circle"></i>
+            {% elif category == 'warning' %}<i class="fas fa-triangle-exclamation"></i>
+            {% else %}<i class="fas fa-info-circle"></i>{% endif %}
+            {{ message }}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      {% endwith %}
+
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

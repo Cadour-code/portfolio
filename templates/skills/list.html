@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Dovednosti{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Dovednosti</h1>
+    <p class="page-subtitle">Sleduj svůj pokrok a rozvíjej se</p>
+  </div>
+  <a href="{{ url_for('skills.add') }}" class="btn btn-primary">
+    <i class="fas fa-plus"></i> Přidat dovednost
+  </a>
+</div>
+
+<!-- Category tabs -->
+<div class="skills-tabs">
+  <a href="{{ url_for('skills.list') }}"
+     class="tab-btn {% if category_filter == 'all' %}active{% endif %}">Všechny</a>
+  {% for cat in categories %}
+  <a href="{{ url_for('skills.list', category=cat.id) }}"
+     class="tab-btn {% if category_filter == cat.id|string %}active{% endif %}"
+     style="{% if category_filter == cat.id|string %}background:{{ cat.color_hex }};border-color:{{ cat.color_hex }}{% endif %}">
+    {{ cat.name }}
+  </a>
+  {% endfor %}
+</div>
+
+{% if skills %}
+<div class="skills-grid">
+  {% for skill in skills %}
+  <div class="skill-card">
+    <div class="skill-card-header">
+      <div>
+        <div class="skill-card-name">{{ skill.name }}</div>
+        {% if skill.category %}
+        <span class="skill-badge" style="background:{{ skill.category.color_hex }}">
+          {{ skill.category.name }}
+        </span>
+        {% endif %}
+      </div>
+      <div class="skill-level-value">{{ skill.current_level }}</div>
+    </div>
+
+    <div class="skill-card-levels">
+      <span>Aktuální: <strong>{{ skill.current_level }}%</strong></span>
+      <span>Cíl: <strong>{{ skill.target_level }}%</strong></span>
+    </div>
+    <div class="progress-wrap">
+      <div class="progress-bar" style="width:{{ skill.current_level }}%;background:{{ skill.category.color_hex if skill.category else 'var(--color-primary)' }}"></div>
+    </div>
+    <div class="progress-wrap" style="margin-top:4px;opacity:0.35">
+      <div class="progress-bar" style="width:{{ skill.target_level }}%;background:{{ skill.category.color_hex if skill.category else 'var(--color-primary)' }}"></div>
+    </div>
+
+    {% if skill.notes %}
+    <p style="font-size:0.8rem;color:var(--color-text-muted);margin-top:0.5rem">{{ skill.notes[:100] }}{% if skill.notes|length > 100 %}…{% endif %}</p>
+    {% endif %}
+
+    <!-- Quick update level -->
+    <form method="POST" action="{{ url_for('skills.update_level', skill_id=skill.id) }}" class="update-level-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="number" name="current_level" value="{{ skill.current_level }}" min="0" max="100" class="form-control">
+      <button type="submit" class="btn btn-warning btn-sm">Aktualizovat</button>
+    </form>
+
+    <div class="skill-card-actions">
+      <a href="{{ url_for('skills.detail', skill_id=skill.id) }}" class="btn btn-secondary btn-sm">
+        <i class="fas fa-chart-line"></i> Vývoj
+      </a>
+      <a href="{{ url_for('skills.edit', skill_id=skill.id) }}" class="btn btn-secondary btn-sm">
+        <i class="fas fa-pen"></i> Upravit
+      </a>
+      <form method="POST" action="{{ url_for('skills.delete', skill_id=skill.id) }}" style="display:inline">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-danger btn-sm"
+                data-confirm="Opravdu chceš smazat dovednost „{{ skill.name }}"?">
+          <i class="fas fa-trash"></i>
+        </button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Global radar per category -->
+{% if cat_skills %}
+<div class="card" style="margin-top:2rem">
+  <div class="card-header">
+    <span class="card-title"><i class="fas fa-chart-radar"></i> Přehled dovedností podle kategorie</span>
+  </div>
+  <div class="category-switcher" id="catSwitcher">
+    {% for cat_id, cat_data in cat_skills.items() %}
+    {% if cat_data.labels %}
+    <button class="tab-btn {% if loop.first %}active{% endif %}"
+            onclick="switchCat({{ cat_id }})"
+            id="catBtn-{{ cat_id }}"
+            style="border-color:{{ cat_data.color }}">
+      {{ cat_data.name }}
+    </button>
+    {% endif %}
+    {% endfor %}
+  </div>
+  <div class="chart-container radar-lg" style="max-width:500px;margin:0 auto">
+    <canvas id="catRadarChart"></canvas>
+  </div>
+</div>
+{% endif %}
+
+{% else %}
+<div class="card">
+  <div class="empty-state">
+    <i class="fas fa-bolt"></i>
+    <h3>Zatím žádné dovednosti</h3>
+    <p>Přidej svou první dovednost a začni sledovat svůj pokrok.</p>
+    <a href="{{ url_for('skills.add') }}" class="btn btn-primary" style="margin-top:1rem">
+      <i class="fas fa-plus"></i> Přidat dovednost
+    </a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if cat_skills %}
+<script>
+const catData = {{ cat_skills | tojson }};
+let currentChart = null;
+
+function switchCat(catId) {
+  const data = catData[catId];
+  if (!data || !data.labels.length) return;
+
+  document.querySelectorAll('#catSwitcher .tab-btn').forEach(btn => btn.classList.remove('active'));
+  const btn = document.getElementById('catBtn-' + catId);
+  if (btn) btn.classList.add('active');
+
+  if (currentChart) currentChart.destroy();
+  currentChart = makeRadarChart('catRadarChart', data.labels, data.data, data.name);
+}
+
+// Init with first category that has data
+const firstCat = Object.entries(catData).find(([id, d]) => d.labels.length > 0);
+if (firstCat) switchCat(parseInt(firstCat[0]));
+</script>
+{% endif %}
+{% endblock %}

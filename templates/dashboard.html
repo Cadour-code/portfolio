@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Přehled{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Přehled</h1>
+    <p class="page-subtitle">Vítej zpět, <strong>{{ current_user.full_name }}</strong>
+      {% if current_user.school_class %}· {{ current_user.school_class }}{% endif %}
+    </p>
+  </div>
+  <a href="{{ url_for('skills.add') }}" class="btn btn-primary">
+    <i class="fas fa-plus"></i> Přidat dovednost
+  </a>
+</div>
+
+<!-- STAT CARDS -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-icon"><i class="fas fa-bolt"></i></div>
+    <div class="stat-info">
+      <div class="stat-value">{{ skill_count }}</div>
+      <div class="stat-label">Dovedností</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+    <div class="stat-info">
+      <div class="stat-value">{{ avg_level }}<span style="font-size:1rem;font-weight:400">%</span></div>
+      <div class="stat-label">Průměrná úroveň</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon"><i class="fas fa-bullseye"></i></div>
+    <div class="stat-info">
+      <div class="stat-value">{{ active_goals }}</div>
+      <div class="stat-label">Aktivních cílů</div>
+    </div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-icon"><i class="fas fa-trophy"></i></div>
+    <div class="stat-info">
+      <div class="stat-value">{{ achievement_count }}</div>
+      <div class="stat-label">Úspěchů</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN GRID -->
+<div class="dashboard-grid">
+  <!-- Radar chart -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="fas fa-chart-radar"></i> Top dovednosti</span>
+      <a href="{{ url_for('skills.list') }}" class="btn btn-secondary btn-sm">Všechny</a>
+    </div>
+    {% if radar_labels %}
+    <div class="chart-container radar-sm">
+      <canvas id="radarChart"></canvas>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <i class="fas fa-bolt"></i>
+      <h3>Zatím žádné dovednosti</h3>
+      <p>Přidej první dovednost a uvidíš zde graf.</p>
+      <a href="{{ url_for('skills.add') }}" class="btn btn-primary" style="margin-top:1rem">
+        <i class="fas fa-plus"></i> Přidat dovednost
+      </a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Upcoming goals -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="fas fa-bullseye"></i> Nejbližší cíle</span>
+      <a href="{{ url_for('goals.add') }}" class="btn btn-secondary btn-sm">Přidat</a>
+    </div>
+    {% if upcoming_goals %}
+    <ul class="upcoming-goals-list">
+      {% for goal in upcoming_goals %}
+      <li class="upcoming-goal-item">
+        <div class="upcoming-goal-header">
+          <span class="upcoming-goal-title">{{ goal.title }}</span>
+          {% if goal.days_remaining is not none %}
+            {% if goal.days_remaining < 0 %}
+              <span class="text-danger" style="font-size:0.78rem"><i class="fas fa-clock"></i> Po termínu</span>
+            {% elif goal.days_remaining == 0 %}
+              <span class="text-warning" style="font-size:0.78rem"><i class="fas fa-clock"></i> Dnes</span>
+            {% else %}
+              <span class="text-muted" style="font-size:0.78rem"><i class="fas fa-calendar"></i> {{ goal.days_remaining }} dní</span>
+            {% endif %}
+          {% endif %}
+        </div>
+        <div class="upcoming-goal-meta">{{ goal.status_label }}</div>
+        <div style="margin-top:0.4rem">
+          <div class="d-flex justify-between mb-1" style="font-size:0.78rem">
+            <span>Pokrok</span><span>{{ goal.progress_percent }}%</span>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-bar yellow" style="width:{{ goal.progress_percent }}%"></div>
+          </div>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-state" style="padding:1.5rem">
+      <i class="fas fa-bullseye" style="font-size:2rem"></i>
+      <h3 style="font-size:1rem;margin-top:0.5rem">Žádné aktivní cíle</h3>
+      <a href="{{ url_for('goals.add') }}" class="btn btn-primary btn-sm" style="margin-top:0.75rem">Přidat cíl</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Activity timeline -->
+  <div class="card full-width">
+    <div class="card-header">
+      <span class="card-title"><i class="fas fa-clock-rotate-left"></i> Poslední aktivity</span>
+    </div>
+    {% if activities %}
+    <ul class="activity-list">
+      {% for act in activities %}
+      <li class="activity-item">
+        <div class="activity-icon"><i class="fas {{ act.icon }}"></i></div>
+        <div>
+          <div class="activity-text">{{ act.title }}</div>
+          <div class="activity-date">{{ act.date.strftime('%d. %m. %Y') }}</div>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-state" style="padding:1.5rem">
+      <p>Zatím žádná aktivita.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if radar_labels %}
+<script>
+makeRadarChart('radarChart',
+  {{ radar_labels | tojson }},
+  {{ radar_data | tojson }},
+  'Úroveň dovedností'
+);
+</script>
+{% endif %}
+{% endblock %}

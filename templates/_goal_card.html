@@ -1,0 +1,63 @@
+<div class="goal-card">
+  <div class="goal-card-title">{{ goal.title }}</div>
+
+  {% if goal.deadline %}
+  {% set days = goal.days_remaining %}
+  <div class="goal-deadline {% if days is not none and days < 0 %}overdue{% elif days is not none and days <= 7 %}soon{% endif %}">
+    <i class="fas fa-calendar"></i>
+    {{ goal.deadline.strftime('%d. %m. %Y') }}
+    {% if days is not none %}
+      {% if days < 0 %}
+        <span>({{ -days }} dní po termínu)</span>
+      {% elif days == 0 %}
+        <span>(Dnes!)</span>
+      {% elif days == 1 %}
+        <span>(Zítra)</span>
+      {% else %}
+        <span>({{ days }} dní)</span>
+      {% endif %}
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if goal.description %}
+  <p style="font-size:0.8rem;color:var(--color-text-muted);margin-bottom:0.5rem">
+    {{ goal.description[:80] }}{% if goal.description|length > 80 %}…{% endif %}
+  </p>
+  {% endif %}
+
+  <div style="display:flex;justify-content:space-between;font-size:0.78rem;margin-bottom:0.3rem">
+    <span>Pokrok</span><span>{{ goal.progress_percent }}%</span>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-bar {% if goal.status == 'completed' %}green{% else %}yellow{% endif %}"
+         style="width:{{ goal.progress_percent }}%"></div>
+  </div>
+
+  {% if goal.linked_skill %}
+  <div style="font-size:0.75rem;color:var(--color-text-muted);margin-top:0.4rem">
+    <i class="fas fa-bolt"></i> {{ goal.linked_skill.name }}
+  </div>
+  {% endif %}
+
+  <div class="goal-card-actions">
+    <a href="{{ url_for('goals.edit', goal_id=goal.id) }}" class="btn btn-secondary btn-sm">
+      <i class="fas fa-pen"></i>
+    </a>
+    {% if goal.status != 'completed' %}
+    <form method="POST" action="{{ url_for('goals.complete', goal_id=goal.id) }}" style="display:inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-success btn-sm" title="Označit jako dokončeno">
+        <i class="fas fa-check"></i>
+      </button>
+    </form>
+    {% endif %}
+    <form method="POST" action="{{ url_for('goals.delete', goal_id=goal.id) }}" style="display:inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-danger btn-sm"
+              data-confirm="Opravdu chceš smazat cíl „{{ goal.title }}"?">
+        <i class="fas fa-trash"></i>
+      </button>
+    </form>
+  </div>
+</div>

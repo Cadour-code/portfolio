@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Profil{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Profil</h1>
+    <p class="page-subtitle">Správa osobních údajů a nastavení účtu</p>
+  </div>
+</div>
+
+<!-- Profile header -->
+<div class="card" style="margin-bottom:1.5rem">
+  <div class="profile-header">
+    <div class="profile-avatar">{{ current_user.first_name[0] }}{{ current_user.last_name[0] }}</div>
+    <div>
+      <div style="font-size:1.4rem;font-weight:700">{{ current_user.full_name }}</div>
+      <div style="color:var(--color-text-muted);font-size:0.9rem">{{ current_user.email }}</div>
+      {% if current_user.school_class %}
+      <div style="font-size:0.85rem;margin-top:0.2rem">
+        <i class="fas fa-school"></i> Třída {{ current_user.school_class }}
+      </div>
+      {% endif %}
+      <div style="font-size:0.78rem;color:var(--color-text-muted);margin-top:0.25rem">
+        Účet vytvořen: {{ current_user.created_at.strftime('%d. %m. %Y') }}
+      </div>
+    </div>
+  </div>
+  {% if current_user.bio %}
+  <div style="border-left:4px solid var(--color-accent-red);padding-left:1rem;color:var(--color-text-muted);font-style:italic;font-size:0.9rem">
+    {{ current_user.bio }}
+  </div>
+  {% endif %}
+</div>
+
+<div class="profile-grid">
+  <!-- Edit profile -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="fas fa-user-pen"></i> Osobní údaje</span>
+    </div>
+    <form method="POST" action="{{ url_for('profile.update') }}" novalidate>
+      {{ profile_form.hidden_tag() }}
+
+      <div class="form-grid-2" style="gap:0.75rem">
+        <div class="form-group">
+          <label class="form-label">Jméno</label>
+          {{ profile_form.first_name(class="form-control") }}
+          {% for e in profile_form.first_name.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Příjmení</label>
+          {{ profile_form.last_name(class="form-control") }}
+          {% for e in profile_form.last_name.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Třída</label>
+        {{ profile_form.school_class(class="form-control", placeholder="3.A") }}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">O mně</label>
+        {{ profile_form.bio(class="form-control", rows=3, placeholder="Krátký popis o sobě...") }}
+      </div>
+
+      {{ profile_form.submit(class="btn btn-primary") }}
+    </form>
+  </div>
+
+  <!-- Change password -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title"><i class="fas fa-lock"></i> Změna hesla</span>
+    </div>
+    <form method="POST" action="{{ url_for('profile.change_password') }}" novalidate>
+      {{ password_form.hidden_tag() }}
+
+      <div class="form-group">
+        <label class="form-label">Stávající heslo</label>
+        {{ password_form.old_password(class="form-control" + (" is-invalid" if password_form.old_password.errors else "")) }}
+        {% for e in password_form.old_password.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Nové heslo</label>
+        {{ password_form.new_password(class="form-control" + (" is-invalid" if password_form.new_password.errors else "")) }}
+        <p class="form-hint">Minimálně 8 znaků</p>
+        {% for e in password_form.new_password.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Potvrdit nové heslo</label>
+        {{ password_form.confirm_password(class="form-control" + (" is-invalid" if password_form.confirm_password.errors else "")) }}
+        {% for e in password_form.confirm_password.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+      </div>
+
+      {{ password_form.submit(class="btn btn-primary") }}
+    </form>
+  </div>
+</div>
+
+<!-- Danger zone -->
+<div class="card" style="margin-top:1.5rem;border-color:var(--color-accent-red)">
+  <div class="card-header">
+    <span class="card-title" style="color:var(--color-accent-red)"><i class="fas fa-triangle-exclamation"></i> Nebezpečná zóna</span>
+  </div>
+  <p style="font-size:0.9rem;color:var(--color-text-muted);margin-bottom:1rem">
+    Smazáním účtu přijdeš o všechna svá data – dovednosti, cíle a úspěchy. Tato akce je nevratná.
+  </p>
+  <form method="POST" action="{{ url_for('profile.delete') }}" style="display:inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn btn-danger"
+            data-confirm="Opravdu chceš smazat svůj účet? Tato akce je nevratná.">
+      <i class="fas fa-trash"></i> Smazat účet
+    </button>
+  </form>
+</div>
+{% endblock %}

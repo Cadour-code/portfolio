@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrace – Studentské portfolio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="auth-wrapper">
+  <div class="auth-card" style="max-width:520px">
+    <div class="auth-logo">
+      <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="Logo">
+      <h1>Gymnázium Šlapanice</h1>
+      <p>Vytvořte si svůj účet</p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }}" style="margin-bottom:1rem">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('auth.register') }}" novalidate>
+      {{ form.hidden_tag() }}
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="form-group">
+          <label class="form-label">Jméno <span class="required">*</span></label>
+          {{ form.first_name(class="form-control" + (" is-invalid" if form.first_name.errors else ""), placeholder="Jan") }}
+          {% for e in form.first_name.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Příjmení <span class="required">*</span></label>
+          {{ form.last_name(class="form-control" + (" is-invalid" if form.last_name.errors else ""), placeholder="Novák") }}
+          {% for e in form.last_name.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">E-mail <span class="required">*</span></label>
+        {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="student@gslapanice.cz") }}
+        {% for e in form.email.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Třída</label>
+        {{ form.school_class(class="form-control", placeholder="3.A") }}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Heslo <span class="required">*</span></label>
+        {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else "")) }}
+        <p class="form-hint">Minimálně 8 znaků</p>
+        {% for e in form.password.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Potvrdit heslo <span class="required">*</span></label>
+        {{ form.confirm_password(class="form-control" + (" is-invalid" if form.confirm_password.errors else "")) }}
+        {% for e in form.confirm_password.errors %}<p class="form-error">{{ e }}</p>{% endfor %}
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100">
+        <i class="fas fa-user-plus"></i> Registrovat se
+      </button>
+    </form>
+
+    <p style="text-align:center;margin-top:1.5rem;font-size:0.875rem;color:var(--color-text-muted)">
+      Již máte účet?
+      <a href="{{ url_for('auth.login') }}" style="color:var(--color-primary);font-weight:600">Přihlásit se</a>
+    </p>
+  </div>
+</div>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

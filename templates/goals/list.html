@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Cíle{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Cíle</h1>
+    <p class="page-subtitle">Plánuj a sleduj svůj pokrok k úspěchu</p>
+  </div>
+  <a href="{{ url_for('goals.add') }}" class="btn btn-primary">
+    <i class="fas fa-plus"></i> Přidat cíl
+  </a>
+</div>
+
+<!-- Kanban board -->
+<div class="kanban-board">
+  <!-- Planned -->
+  <div class="kanban-col">
+    <div class="kanban-col-header">
+      <span class="col-dot" style="background:#6b7280"></span>
+      Plánováno
+      <span style="margin-left:auto;font-size:0.8rem;color:var(--color-text-muted)">{{ planned|length }}</span>
+    </div>
+    {% for goal in planned %}
+    {% include '_goal_card.html' %}
+    {% else %}
+    <p style="font-size:0.85rem;color:var(--color-text-muted);text-align:center;padding:1rem">Žádné plánované cíle</p>
+    {% endfor %}
+  </div>
+
+  <!-- In progress -->
+  <div class="kanban-col">
+    <div class="kanban-col-header">
+      <span class="col-dot" style="background:var(--color-accent-yellow)"></span>
+      Probíhá
+      <span style="margin-left:auto;font-size:0.8rem;color:var(--color-text-muted)">{{ in_progress|length }}</span>
+    </div>
+    {% for goal in in_progress %}
+    {% include '_goal_card.html' %}
+    {% else %}
+    <p style="font-size:0.85rem;color:var(--color-text-muted);text-align:center;padding:1rem">Žádné probíhající cíle</p>
+    {% endfor %}
+  </div>
+
+  <!-- Completed -->
+  <div class="kanban-col">
+    <div class="kanban-col-header">
+      <span class="col-dot" style="background:var(--color-success)"></span>
+      Dokončeno
+      <span style="margin-left:auto;font-size:0.8rem;color:var(--color-text-muted)">{{ completed|length }}</span>
+    </div>
+    {% for goal in completed %}
+    {% include '_goal_card.html' %}
+    {% else %}
+    <p style="font-size:0.85rem;color:var(--color-text-muted);text-align:center;padding:1rem">Žádné dokončené cíle</p>
+    {% endfor %}
+  </div>
+</div>
+
+{% if not planned and not in_progress and not completed %}
+<div class="card">
+  <div class="empty-state">
+    <i class="fas fa-bullseye"></i>
+    <h3>Zatím žádné cíle</h3>
+    <p>Nastav si první cíl a začni na něm pracovat.</p>
+    <a href="{{ url_for('goals.add') }}" class="btn btn-primary" style="margin-top:1rem">
+      <i class="fas fa-plus"></i> Přidat cíl
+    </a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
