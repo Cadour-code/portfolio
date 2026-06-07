@@ -17,6 +17,8 @@ class RegistrationForm(FlaskForm):
     submit = SubmitField('Registrovat se')
 
     def validate_email(self, field):
+        if not field.data.lower().endswith('@gslap.cz'):
+            raise ValidationError('Registrace je povolena pouze pro e-maily s doménou @gslap.cz.')
         user = User.query.filter_by(email=field.data.lower()).first()
         if user:
             raise ValidationError('Tento e-mail je již registrován.')
